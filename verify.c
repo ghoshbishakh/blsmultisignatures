@@ -5,35 +5,39 @@
 // Ben Lynn
 #include <pbc.h>
 #include <pbc_test.h>
+#include <string.h>
 
 int main(int argc, char **argv) {
 
 	if (argc <= 5)
 	{
-		printf("Give parameters file input: pbc-0.5.14/param/a1.param, Hash, Hash Length, signature_file_path, Path to artifacts, key_id1 (1 for private_key1), key_id2, ..\n");
+		printf("Give parameters file input: pbc-0.5.14/param/a1.param, Hash, signature_file_path, Path to artifacts, key_id1 (1 for private_key1), key_id2, ..\n");
 		return 0;
 	}
 
-	printf("Hash: %s\n", argv[2]);
-	printf("Hash Length: %s\n", argv[3]);
-	printf("Signature file: %s\n", argv[4]);
-	printf("Path to artifacts: %s\n", argv[5]);
-	printf("key id: %s\n", argv[6]);
+	printf("Signature file: %s\n", argv[3]);
+	printf("Path to artifacts: %s\n", argv[4]);
+	printf("key id: %s\n", argv[5]);
 
 	char private_key_path[500], public_key_path[500], g_path[500];
 	char *signature_path, *hashinput;
 	int hashlength;
 
 	hashinput = argv[2];
-	hashlength = atoi(argv[3]);
-	signature_path = argv[4];
-	sprintf(private_key_path, "%s/private_key%s", argv[5], argv[6]);
-	sprintf(public_key_path, "%s/public_key%s", argv[5], argv[6]);
-	sprintf(g_path, "%s/g", argv[5]);
+	hashlength = strlen(hashinput);
+	printf("Hash: %s\n", hashinput);
+	printf("Hash Length: %d\n", hashlength);
+
+
+	signature_path = argv[3];
+	sprintf(private_key_path, "%s/private_key%s", argv[4], argv[5]);
+	sprintf(public_key_path, "%s/public_key%s", argv[4], argv[5]);
+	sprintf(g_path, "%s/g", argv[4]);
 	
 	printf("Path to g: %s\n", g_path);
 	printf("Path to public_key: %s\n", public_key_path);
 	printf("Path to private_key: %s\n", private_key_path);
+	printf("Path to signature: %s\n", signature_path);
 
 	pairing_t pairing;
 	element_t g, hash;
@@ -100,7 +104,7 @@ int main(int argc, char **argv) {
 		fclose(fp);
 
 		element_from_bytes_compressed(sig1, data);
-		element_printf("decompressed public_key1 %B\n\n", sig1);
+		element_printf("decompressed signature %B\n\n", sig1);
 	}
 
 

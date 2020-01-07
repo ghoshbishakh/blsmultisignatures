@@ -5,6 +5,7 @@
 // Ben Lynn
 #include <pbc.h>
 #include <pbc_test.h>
+#include <string.h>
 
 int main(int argc, char **argv) {
 
@@ -19,7 +20,11 @@ int main(int argc, char **argv) {
 	printf("key id: %s\n", argv[4]);
 
 	char private_key_path[500], public_key_path[500], g_path[500], signature_path[500];
-	
+	char *hashstring;
+	int hashlength;
+
+	hashstring = argv[2];
+	hashlength = strlen(hashstring);
 	sprintf(private_key_path, "%s/private_key%s", argv[3], argv[4]);
 	sprintf(public_key_path, "%s/public_key%s", argv[3], argv[4]);
 	sprintf(g_path, "%s/g", argv[3]);
@@ -28,6 +33,7 @@ int main(int argc, char **argv) {
 	printf("Path to g: %s\n", g_path);
 	printf("Path to public_key: %s\n", public_key_path);
 	printf("Path to private_key: %s\n", private_key_path);
+	printf("Hash length: %d\n", hashlength);
 
 	pairing_t pairing;
 	element_t g, hash;
@@ -103,7 +109,7 @@ int main(int argc, char **argv) {
 
 	//generate element from a hash
 	//for toy pairings, should check that pairing(g, h) != 1
-	element_from_hash(hash, argv[2], 10);
+	element_from_hash(hash, hashstring, hashlength);
 	element_printf("message hash = %B\n\n", hash);
 
 	//h^secret_key is the signature
