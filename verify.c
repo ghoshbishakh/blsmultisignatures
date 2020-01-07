@@ -20,15 +20,16 @@ int main(int argc, char **argv) {
 	printf("Path to artifacts: %s\n", argv[5]);
 	printf("key id: %s\n", argv[6]);
 
-	char private_key_path[500], public_key_path[500], g_path[500], signature_path[500];
-	char* signature_path, hashinput;
-	
+	char private_key_path[500], public_key_path[500], g_path[500];
+	char *signature_path, *hashinput;
+	int hashlength;
 
-	signature_path = argv[3];
 	hashinput = argv[2];
-	sprintf(private_key_path, "%s/private_key%s", argv[4], argv[5]);
-	sprintf(public_key_path, "%s/public_key%s", argv[4], argv[5]);
-	sprintf(g_path, "%s/g", argv[4]);
+	hashlength = atoi(argv[3]);
+	signature_path = argv[4];
+	sprintf(private_key_path, "%s/private_key%s", argv[5], argv[6]);
+	sprintf(public_key_path, "%s/public_key%s", argv[5], argv[6]);
+	sprintf(g_path, "%s/g", argv[5]);
 	
 	printf("Path to g: %s\n", g_path);
 	printf("Path to public_key: %s\n", public_key_path);
@@ -37,7 +38,6 @@ int main(int argc, char **argv) {
 	pairing_t pairing;
 	element_t g, hash;
 	element_t public_key1, sig1;
-	element_t secret_key1;
 
 	element_t temp1, temp2;
 
@@ -48,7 +48,6 @@ int main(int argc, char **argv) {
 	element_init_G1(hash, pairing);
 
 	element_init_G2(public_key1, pairing);
-	element_init_Zr(secret_key1, pairing);
 
 	element_init_G1(sig1, pairing);
 
@@ -88,16 +87,27 @@ int main(int argc, char **argv) {
 		element_printf("decompressed public_key1 %B\n\n", public_key1);
 	}
 
+	printf("Reading signature =========================\n");
+
+	{
+
+		int n = pairing_length_in_bytes_compressed_G1(pairing);
+	    unsigned char *data = pbc_malloc(n);
+
+		FILE *fp;
+		fp = fopen(signature_path, "r");
+		fread(data, n, 1, fp);
+		fclose(fp);
+
+		element_from_bytes_compressed(sig1, data);
+		element_printf("decompressed public_key1 %B\n\n", sig1);
+	}
+
 
 	//generate element from a hash
 	//for toy pairings, should check that pairing(g, h) != 1
-	element_from_hash(hash, hashinput, 10);
+	element_from_hash(hash, hashinput, hashlength);
 	element_printf("message hash = %B\n\n", hash);
-
-	//h^secret_key is the signature
-	//in real life: only output the first coordinate
-	element_pow_zn(sig1, hash, secret_key1);
-	element_printf("signature1 = %B\n\n", sig1);
 
 
 
@@ -116,39 +126,9 @@ int main(int argc, char **argv) {
 		printf("\n\n ==========> *BUG* signature does not verify *BUG*\n\n");
 	}
 
-	// SAVE signature ====================================
-	printf("Saving signature ==================================\n");
-
-
-	{
-	    element_printf("original  sig1 = %B\n\n", sig1);
-
-	    int n = pairing_length_in_bytes_compressed_G1(pairing);
-	    //int n = element_length_in_bytes_compressed(sig);
-	    int i;
-	    unsigned char *data = pbc_malloc(n);
-
-	    element_to_bytes_compressed(data, sig1);
-	    printf("compressed sig1 = ");
-	    for (i = 0; i < n; i++) {
-	      printf("%02X", data[i]);
-	    }
-	    printf("\n\n");
-
-	    element_from_bytes_compressed(sig1, data);
-	    element_printf("decompressed sig1 = %B\n\n", sig1);
-
-	    FILE *fp;
-		fp = fopen(signature_path, "w");
-		fwrite(data, n, 1, fp);
-		fclose(fp);
-
-	    pbc_free(data);
-	}
 
 	element_clear(sig1);
 	element_clear(public_key1);
-	element_clear(secret_key1);
 	element_clear(g);
 	element_clear(hash);
 	element_clear(temp1);
