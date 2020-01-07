@@ -19,9 +19,11 @@ int main(int argc, char **argv) {
 	printf("Path to artifacts: %s\n", argv[4]);
 	printf("key id: %s\n", argv[5]);
 
-	char private_key_path[500], public_key_path[500], g_path[500];
+	char public_key_path[500], g_path[500];
 	char *signature_path, *hashinput;
 	int hashlength;
+	int numberofkeys = argc-5;
+	int keys_included = 0;
 
 	hashinput = argv[2];
 	hashlength = strlen(hashinput);
@@ -30,18 +32,16 @@ int main(int argc, char **argv) {
 
 
 	signature_path = argv[3];
-	sprintf(private_key_path, "%s/private_key%s", argv[4], argv[5]);
 	sprintf(public_key_path, "%s/public_key%s", argv[4], argv[5]);
 	sprintf(g_path, "%s/g", argv[4]);
 	
 	printf("Path to g: %s\n", g_path);
 	printf("Path to public_key: %s\n", public_key_path);
-	printf("Path to private_key: %s\n", private_key_path);
 	printf("Path to signature: %s\n", signature_path);
 
 	pairing_t pairing;
 	element_t g, hash;
-	element_t public_key1, sig1;
+	element_t public_key1, public_key_combined, sig1;
 
 	element_t temp1, temp2;
 
@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
 	element_init_G1(hash, pairing);
 
 	element_init_G2(public_key1, pairing);
+	element_init_G2(public_key_combined, pairing);
 
 	element_init_G1(sig1, pairing);
 
@@ -74,23 +75,6 @@ int main(int argc, char **argv) {
 		free(data);
 	}
 
-	// Read public_key1 ==============================
-	printf("Reading public_key =========================\n");
-
-	{
-
-		int n = element_length_in_bytes(public_key1);
-		unsigned char *data = malloc(n);
-
-		FILE *fp;
-		fp = fopen(public_key_path, "r");
-		fread(data, n, 1, fp);
-		fclose(fp);
-
-		element_from_bytes(public_key1, data);
-		element_printf("decompressed public_key1 %B\n\n", public_key1);
-	}
-
 	printf("Reading signature =========================\n");
 
 	{
@@ -107,6 +91,51 @@ int main(int argc, char **argv) {
 		element_printf("decompressed signature %B\n\n", sig1);
 	}
 
+	// Read public_key1 ==============================
+	printf("Reading %s =========================\n", public_key_path);
+
+	{
+
+		int n = element_length_in_bytes(public_key1);
+		unsigned char *data = malloc(n);
+
+		FILE *fp;
+		fp = fopen(public_key_path, "r");
+		fread(data, n, 1, fp);
+		fclose(fp);
+
+		element_from_bytes(public_key1, data);
+		element_printf("decompressed public_key1 %B\n\n", public_key1);
+	}
+	element_set(public_key_combined, public_key1);
+	keys_included++;
+
+	while(keys_included < numberofkeys){
+		printf("Including key_id: %s\n", argv[5+keys_included]);
+		sprintf(public_key_path, "%s/public_key%s", argv[4], argv[5+keys_included]);
+
+		printf("Including key: %s\n", public_key_path);
+		
+		printf("Reading %s=========================\n", public_key_path);
+
+		{
+
+			int n = element_length_in_bytes(public_key1);
+			unsigned char *data = malloc(n);
+
+			FILE *fp;
+			fp = fopen(public_key_path, "r");
+			fread(data, n, 1, fp);
+			fclose(fp);
+
+			element_from_bytes(public_key1, data);
+			element_printf("decompressed public_key1 %B\n\n", public_key1);
+		}
+
+		element_mul(public_key_combined, public_key1, public_key_combined);
+
+		keys_included++;
+	}
 
 	//generate element from a hash
 	//for toy pairings, should check that pairing(g, h) != 1
@@ -121,7 +150,7 @@ int main(int argc, char **argv) {
 
 	//verification part 2
 	//should match above
-	element_pairing(temp2, hash, public_key1);
+	element_pairing(temp2, hash, public_key_combined);
 	element_printf("f(message hash, public_key) = %B\n\n", temp2);
 
 	if (!element_cmp(temp1, temp2)) {
