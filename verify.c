@@ -9,10 +9,12 @@
 
 int main(int argc, char **argv) {
 
+	int return_code = 0;
+
 	if (argc <= 5)
 	{
 		printf("Give parameters file input: pbc-0.5.14/param/a1.param, Hash, signature_file_path, Path to artifacts, key_id1 (1 for private_key1), key_id2, ..\n");
-		return 0;
+		return 1;
 	}
 
 	printf("Signature file: %s\n", argv[3]);
@@ -157,6 +159,7 @@ int main(int argc, char **argv) {
 		printf("\n\n ==========> signature1 verifies\n\n");
 	} else {
 		printf("\n\n ==========> *BUG* signature does not verify *BUG*\n\n");
+		return_code = 1;
 	}
 
 
@@ -167,5 +170,5 @@ int main(int argc, char **argv) {
 	element_clear(temp1);
 	element_clear(temp2);
 	pairing_clear(pairing);
-	return 0;
+	return return_code;
 }
