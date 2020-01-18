@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/ghoshbishakh/blsmultisignatures#readme",
   "dependencies": {
-    "child_process": "^1.0.2"
+    "child_process": "^1.0.2",
+    "fs": "0.0.1-security",
+    "sha1": "^1.1.1",
+    "web3": "^1.2.5-rc.0"
   }
 }
