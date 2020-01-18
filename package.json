@@ -1,0 +1,22 @@
+{
+  "name": "blsmultisignatures",
+  "version": "1.0.0",
+  "description": "Based on the PBC Library: [https://crypto.stanford.edu/pbc/](https://crypto.stanford.edu/pbc/)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ghoshbishakh/blsmultisignatures.git"
+  },
+  "author": "bishakh ghosh, tanay bhartia",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ghoshbishakh/blsmultisignatures/issues"
+  },
+  "homepage": "https://github.com/ghoshbishakh/blsmultisignatures#readme",
+  "dependencies": {
+    "child_process": "^1.0.2"
+  }
+}
